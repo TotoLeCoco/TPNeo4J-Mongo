@@ -5,6 +5,9 @@
  */
 package tpneo4j.mongo;
 
+import static tpneo4j.mongo.Neo4jClass.*;
+import static tpneo4j.mongo.MongoClass.*;
+
 /**
  *
  * @author Fouad El Ouaryaghli
@@ -18,7 +21,7 @@ public class TPNeo4JMongo {
         // TODO code application logic here
         MongoClass mc = new MongoClass();
         Neo4jClass neo = new Neo4jClass();
-        neo.connexion();
+        connexion();
         neo.listeTitre();
         mc.datastoreMongo();
         
