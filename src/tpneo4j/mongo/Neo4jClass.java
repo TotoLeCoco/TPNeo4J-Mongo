@@ -31,15 +31,22 @@ public class Neo4jClass {
     
     // recupere les ids et titres de tous les article 
     public void listeTitre(){
+        listArticle.clear();
         StatementResult result = session.run("MATCH (a:Article) RETURN id(a),a.titre order by id(a) asc");
         while(result.hasNext()){
                 // lecture de la ligne suivante 
                 Record record = result.next();
-                String ch = record.get("id(a)").asInt()+" - "+ record.get("a.titre").asString();
+                String ch = record.get("id(a)").asInt()+" "+ record.get("a.titre").asString();
                 listArticle.add(ch);
         }
     }
-    
+    public void NBArticle(){
+        StatementResult result = session.run("MATCH (p:Auteur)-[e:Ecrire]-(a:Article) RETURN p.nom, count(a) order by count(a) desc, p.nom asc limit 10");
+        while(result.hasNext()){
+            Record record = result.next();
+            System.out.println(record.get("count(a)").asInt()+" - "+ record.get("p.nom").asString());
+        }
+    }
     
     
     
