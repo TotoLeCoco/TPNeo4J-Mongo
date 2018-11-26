@@ -35,7 +35,7 @@ public class Neo4jClass {
         while(result.hasNext()){
                 // lecture de la ligne suivante 
                 Record record = result.next();
-                String ch = record.get("id(a)").asInt()+" - "+ record.get("a.titre").asString();
+                String ch = record.get("id(a)").asInt()+" "+ record.get("a.titre").asString();
                 listArticle.add(ch);
         }
     }

@@ -16,6 +16,12 @@ public class TPNeo4JMongo {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        MongoClass mc = new MongoClass();
+        Neo4jClass neo = new Neo4jClass();
+        neo.connexion();
+        neo.listeTitre();
+        mc.datastoreMongo();
+        
     }
     
 }
