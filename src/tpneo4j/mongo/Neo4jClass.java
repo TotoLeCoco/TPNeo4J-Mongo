@@ -28,8 +28,7 @@ public class Neo4jClass {
         session.close();
         driver.close();
     }
-    public static void traitementText(int id,String chaine){
-    }
+    
     // recupere les ids et titres de tous les article 
     public void listeTitre(){
         StatementResult result = session.run("MATCH (a:Article) RETURN id(a),a.titre order by id(a) asc");
@@ -40,6 +39,8 @@ public class Neo4jClass {
                 listArticle.add(ch);
         }
     }
+    
+    
     
     
     
