@@ -12,9 +12,9 @@ import org.neo4j.driver.v1.*;
  * @author Fouad El Ouaryaghli
  */
 public class Neo4jClass {
-    private static Driver driver ;
-    private static Session session ;
-    private static ArrayList<String> listArticle;
+    static Driver driver ;
+    static Session session ;
+    static ArrayList<String> listArticle;
     
     //connexion Neo4j
     public static void connexion(){
