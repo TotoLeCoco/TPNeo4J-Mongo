@@ -20,7 +20,7 @@ public class MongoClass {
     
     static MongoClient mc = new MongoClient("127.0.0.1");
     static MongoDatabase dt =  mc.getDatabase("dbDocuments");
-    static MongoCollection<Document> coll = null;
+    //static MongoCollection<Document> coll = new MongoCollection<Document>;
     
     public void datastoreMongo(){
         dt.createCollection("index");
@@ -37,7 +37,4 @@ public class MongoClass {
         coll.insertMany(list);        
     }
     
-    public void classTest1(){
-        
-    }
 }
