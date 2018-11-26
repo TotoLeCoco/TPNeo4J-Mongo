@@ -37,4 +37,7 @@ public class MongoClass {
         coll.insertMany(list);        
     }
     
+    public void classTest1(){
+        
+    }
 }
