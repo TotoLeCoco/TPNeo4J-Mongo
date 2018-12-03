@@ -13,6 +13,7 @@ import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.Updates;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import org.bson.Document;
@@ -25,6 +26,7 @@ import org.neo4j.driver.v1.StatementResult;
 import static tpneo4j.mongo.MongoClass.dt;
 import static tpneo4j.mongo.Neo4jClass.driver;
 import static tpneo4j.mongo.Neo4jClass.listArticle;
+import static tpneo4j.mongo.Neo4jClass.session;
 
 /**
  *
@@ -91,31 +93,124 @@ public class TPNeo4JMongo {
         Document document;
         if (coll != null) {
             FindIterable<Document> documents = coll.find();
-            ArrayList<String> listMots = new ArrayList<>();
+            ArrayList<String> listMots ;
+            ArrayList<String> listIdDoc ;
             for (Document doc : documents){
-                listMots = (ArrayList) doc.get("motsCles");
-                for (String s : listMots){
+                listMots = (ArrayList<String>) doc.get("motsCles");
+                //System.out.println(doc.toJson(new JsonWriterSettings(true)));
+                    for (String s : listMots){
                     document = coll2.find(eq("mot",s)).first();
-                    if (document != null)
-                        document.append("idDocument", Arrays.asList(doc.getString("idDocument")));
-                        //document.append("idDocument", Updates.addToSet("idDocument", doc.getInteger("idDocument")));
+                    //System.out.println(document.toJson(new JsonWriterSettings(true)));
+                    System.out.println(s);
+                    if (document != null){
+                        listIdDoc = (ArrayList<String>)document.get("idDocument");
+                        listIdDoc.add(String.valueOf(doc.get("idDocument")));
+                        document.put("idDocument", listIdDoc);
+                        coll2.replaceOne(eq("mot",s),document);
+                    }
                     else {
                         document = new Document();
                         document.append("mot", s);
-                        document.append("idDocument", Arrays.asList(doc.getString("idDocument")));
+                        listIdDoc = new ArrayList<>();
+                        listIdDoc.add(String.valueOf(doc.get("idDocument")));
+                        document.append("idDocument", listIdDoc);
+                        coll2.insertOne(document);
                     }
-                    coll2.insertOne(document);
                 }
             }
         }
         else {
-            System.out.println("Collection vide");
+            System.out.println("Collection source vide");
         }
     }
+        
+    static void rechercheMot(){
+        MongoCollection<Document> coll = dt.getCollection("indexInverse");
+	String requete = "match (a:Article) where ";
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Entrer le mot à rechercher");
+        String mot=sc.next();
+	Document doc = coll.find(eq("mot", mot)).first();
+        if (doc != null){
+            ArrayList<String> listArticle = new ArrayList<>();
+            listArticle = (ArrayList<String>) doc.get("idDocument");
+            Boolean premier = true;
+            for(String Article : listArticle)
+            {
+                if(premier){
+                        requete = requete + "id(a)=" +Article;
+                        premier = false;
+                }else{
+                        requete = requete + " or id(a)=" +Article;
+                }
+            } 
+            requete = requete +" return id(a),a.titre order by a.titre asc limit 10";
+            StatementResult result = session.run(requete);
+            // lire le resultat 
+            while(result.hasNext()){
+                // lecture de la ligne suivante 
+                Record record = result.next();
+                // affiche le resultat d'une ligne 
+                System.out.println(record.get("a.titre").asString());
+            }
+	}else{
+            System.out.println("aucun titre ne contient ce mot");
+	}	
+    }
+    
+    static void nbArticle(){
+        StatementResult result = session.run("MATCH (p:Auteur)-[e:Ecrire]-(a:Article) RETURN p.nom, count(a) order by count(a) desc, p.nom asc limit 10");
+        while(result.hasNext()){
+            Record record = result.next();
+            System.out.println(record.get("count(a)").asInt()+" - "+ record.get("p.nom").asString());
+        }
+    }
+    
+    static void recherchePlusieursMot(){
+	
+	String mot ="";
+	String requete = "match (a:Article) where ";
+        MongoCollection<Document> coll = dt.getCollection("indexInverse");
+	
+	Scanner sc = new Scanner(System.in);
+        do {
+            System.out.println(mot);
+            mot = sc.next();
+            
+            Document doc = coll.find(eq("mot", mot)).first();
+            if (doc != null){
+                ArrayList<String> listArticle = new ArrayList<>();
+                listArticle = (ArrayList) doc.get("idDocument");
+                Boolean premier = true;
+                for(String Article : listArticle)
+                {
+                    if(premier){
+                        requete = requete + "id(a)=" +Article;
+                        premier = false;
+                    }else{
+                        requete = requete + " or id(a)=" +Article;
+                    }
+                } 
+            }
+        }while(sc.hasNext() && mot == "Q");
+        requete = requete +" return a.titre, count(a) order by count(a) asc limit 10";
+            System.out.println(requete);
+        StatementResult result = session.run(requete);
+        // lire le resultat 
+        while(result.hasNext()){
+            // lecture de la ligne suivante 
+            Record record = result.next();
+            // affiche le resultat d'une ligne 
+            System.out.println( record.get("a.titre").asString() +" "+record.get("count(a)").asInt());
+        }
+}
+
+    
     public static void main(String[] args) {
         // TODO code application logic here
         
-        structureMiroir();
+        recherchePlusieursMot();
+        //structureMiroir();
                     
  /*        Scanner sc = new Scanner(System.in);
            String selection;
@@ -151,7 +246,6 @@ public class TPNeo4JMongo {
         }while (!selection.equals("5"));
         */
     }
-        
-    }
+    
     
 }
